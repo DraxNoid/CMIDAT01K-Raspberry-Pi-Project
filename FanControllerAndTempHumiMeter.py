@@ -27,6 +27,7 @@ def Main():
                     lcd.text(f"Humi = {humidity}%", 2)
                     # Calling the thingspeak function and giving it the temperature and humidity
                     Thingspeak(temperature, humidity)
+                    Fan(temperature)
                     time.sleep(2.0)
             except RuntimeError:
                 # If it encounters a runtime error it ignores it
@@ -44,7 +45,7 @@ def Thingspeak(temp, humi):
     requests.get(url, params=queries)
 
 def Fan(temp):
-    if temp > 0:
+    if temp > 27:
         GPIO.output(17, True)
     else:
         GPIO.output(17, False)
