@@ -49,18 +49,22 @@ def ThingspeakWrite(temp, humi):
     writeQueries["field3"] = FanCounter
     # Sends the temperature and humidity data to thingspeak
     requests.get(writeUrl, params=writeQueries)
+
 def ThingspeakRead():
     global FanCounter
     data = requests.get(readUrl, params=readQueries).json()
+    # Gets Counter value from thingspeak and assigns it to FanCounter to continue to count up even after restarting the program
     FanCounter = int(data["feeds"][0]["field3"])
 
 def Fan(temp):
     global FanCounter
     if temp > TempThreshold and GPIO.input(17) == False:
+        # Turns on the fan when its hotter than the speciefied value 
         GPIO.output(17, True)
         FanCounter += 1
         print(FanCounter)
     elif temp < TempThreshold:
+        # Turns off the fan when the temperature is lower than the specied value
         GPIO.output(17, False)
 
 ThingspeakRead()
