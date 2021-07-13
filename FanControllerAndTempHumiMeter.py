@@ -17,6 +17,8 @@ GPIO.setup(17, GPIO.OUT)
 GPIO.setup(13,GPIO.IN)
 FanCounter = 0
 TempThreshold = 0
+continueCount = True
+pauseDuration = 2
 def Main():
     try:
         while True:
@@ -29,11 +31,11 @@ def Main():
                     print(f"Temp={temperature:0.1f}C  Humidity={humidity}%")
                     # Showing the temperature and humidity level on the LCD screen
                     lcd.text(f"Temp = {temperature:0.1f}C", 1)
-                    lcd.text(f"Humi = {humidity}%", 2)
+                    lcd.text(f"Humi = {humidity}%  {FanCounter:04d}", 2)
                     # Calling the thingspeak function and giving it the temperature and humidity
                     ThingspeakWrite(temperature, humidity)
                     Fan(temperature)
-                    time.sleep(2.0)
+                    time.sleep(pauseDuration)
             except RuntimeError:
                 # If it encounters a runtime error it ignores it
                 pass
@@ -54,7 +56,8 @@ def ThingspeakRead():
     global FanCounter
     data = requests.get(readUrl, params=readQueries).json()
     # Gets Counter value from thingspeak and assigns it to FanCounter to continue to count up even after restarting the program
-    FanCounter = int(data["feeds"][0]["field3"])
+    if continueCount:
+        FanCounter = int(data["feeds"][0]["field3"])
 
 def Fan(temp):
     global FanCounter
@@ -62,7 +65,6 @@ def Fan(temp):
         # Turns on the fan when its hotter than the speciefied value 
         GPIO.output(17, True)
         FanCounter += 1
-        print(FanCounter)
     elif temp < TempThreshold:
         # Turns off the fan when the temperature is lower than the specied value
         GPIO.output(17, False)
